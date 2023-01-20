@@ -27,6 +27,38 @@ def pad_trunc(aud, max_ms):
     
     return (sig, sr)
 
+def rechannel(aud, new_channel):
+    sig, sr = aud
+
+    if (sig.shape[0] == new_channel):
+      # Nothing to do
+      return aud
+
+    if (new_channel == 1):
+      # Convert from stereo to mono by selecting only the first channel
+      resig = sig[:1, :]
+    else:
+      # Convert from mono to stereo by duplicating the first channel
+      resig = torch.cat([sig, sig])
+
+    return ((resig, sr))
+
+def resample(aud, newsr):
+    sig, sr = aud
+
+    if (sr == newsr):
+      # Nothing to do
+      return aud
+
+    num_channels = sig.shape[0]
+    # Resample first channel
+    resig = torchaudio.transforms.Resample(sr, newsr)(sig[:1,:])
+    if (num_channels > 1):
+      # Resample the second channel and merge both channels
+      retwo = torchaudio.transforms.Resample(sr, newsr)(sig[1:,:])
+      resig = torch.cat([resig, retwo])
+
+    return ((resig, newsr))
 
 def spectro_gram(aud, n_mels=64, n_fft=1024, hop_len=None):
     sig,sr = aud

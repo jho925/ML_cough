@@ -1,6 +1,9 @@
 import torch
 from torch import nn
 from torch.nn import init
+import torch.nn.functional as F
+from sklearn.metrics import roc_curve, roc_auc_score
+import matplotlib.pyplot as plt
 
 
 class CoughClassifier(nn.Module):
@@ -9,7 +12,7 @@ class CoughClassifier(nn.Module):
         conv_layers = []
 
         # First Convolution Block with Relu and Batch Norm. Use Kaiming Initialization
-        self.conv1 = nn.Conv2d(1, 8, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
+        self.conv1 = nn.Conv2d(2, 8, kernel_size=(5, 5), stride=(2, 2), padding=(2, 2))
         self.relu1 = nn.ReLU()
         self.bn1 = nn.BatchNorm2d(8)
         init.kaiming_normal_(self.conv1.weight, a=0.1)
@@ -98,9 +101,9 @@ def training(model, train_dl, num_epochs):
 
             # Keep stats for Loss and Accuracy
             running_loss += loss.item()
-
             # Get the predicted class with the highest score
             _, prediction = torch.max(outputs,1)
+
             # Count of predictions that matched the target label
             correct_prediction += (prediction == labels).sum().item()
             total_prediction += prediction.shape[0]
@@ -128,6 +131,7 @@ def test(model, test_dl):
 
             # Get the predicted class with the highest score
             _, prediction = torch.max(outputs,1)
+
             # Count of predictions that matched the target label
             correct_prediction += (prediction == labels).sum().item()
             total_prediction += prediction.shape[0]
@@ -137,6 +141,20 @@ def test(model, test_dl):
 
 
 
+def roc_auc(model,test_dl):
+    with torch.no_grad():
+        for data in test_dl:
+            inputs, labels = data[0],data[1]
+            outputs = model(inputs)
+            probabilities = F.softmax(outputs, dim=1)[:, 1]
+            y_score = probabilities.detach().numpy()
 
+            auc_score = roc_auc_score(labels, y_score)
+            print(auc_score)
+            nn_fpr, nn_tpr, nn_thresholds = roc_curve(labels, y_score)
 
+            plt.plot(nn_fpr,nn_tpr,marker='.')
+            plt.ylabel('True Positive Rate')
+            plt.xlabel('False Positive Rate' )
+            plt.show()
 

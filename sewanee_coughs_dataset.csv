@@ -1,4 +1,4 @@
-user_id,date_time,wav_file,signal_to_noise_ratio,loudness,peak_start_sec,timestamp_ms,cough_prediction_score,is_cough
+sample-1613999761995.wavuser_id,date_time,wav_file,signal_to_noise_ratio,loudness,peak_start_sec,timestamp_ms,cough_prediction_score,is_cough
 a9kTCQH0alPQMTqgSczkYmkkNzg2,2021-02-21 20:22:35.496036,user/sewanee 2576@hyfe.ai/sample-1613938953338.wav,37.5989480567231,76.4653315218044,0.94,1613938954278,0.999991297721863,True
 H1du0OGn2VgbzdFQLY5qiDnaLzF2,2021-02-21 20:37:22.709610,user/sewanee 2308@hyfe.ai/sample-1613939840884.wav,30.1042443416247,75.7947802011377,1.74,1613939842624,0.99974125623703,True
 a9kTCQH0alPQMTqgSczkYmkkNzg2,2021-02-21 20:42:43.366431,user/sewanee 2576@hyfe.ai/sample-1613940161529.wav,37.7245075543303,76.9046185781526,0.58,1613940162109,0.993820130825043,True

@@ -2,7 +2,7 @@ from torch.utils.data import random_split, DataLoader
 from cough_dataset import cough_dataloader
 import pandas as pd
 
-df = pd.read_csv('sewanee_labels.csv')
+df = pd.read_csv('ML_labels.csv')
 myds = cough_dataloader(df)
 
 # Random split of 80:20 between training and validation
@@ -13,4 +13,4 @@ train_ds, test_ds = random_split(myds, [num_train, num_test])
 
 # Create training and validation data loaders
 train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
-test_dl = DataLoader(test_ds, batch_size=16, shuffle=False)
+test_dl = DataLoader(test_ds, batch_size=2000, shuffle=False)
