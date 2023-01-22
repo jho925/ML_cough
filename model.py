@@ -4,6 +4,7 @@ from torch.nn import init
 import torch.nn.functional as F
 from sklearn.metrics import roc_curve, roc_auc_score
 import matplotlib.pyplot as plt
+import torchmetrics
 
 
 class CoughClassifier(nn.Module):
@@ -61,7 +62,6 @@ class CoughClassifier(nn.Module):
 
         # Linear layer
         x = self.lin(x)
-        x = torch.sigmoid(x)
         x = x.flatten()
 
         # Final output
@@ -134,34 +134,25 @@ def test(model, test_dl):
             # Get predictions
             outputs = model(inputs)
 
-            # Get the predicted class with the highest score
+            # Threshold with sigmoid
             threshold = torch.tensor([0.5])
-            prediction = (output>threshold).float()*1
-
-
+            prediction = (outputs>threshold).float()*1
+            auroc = torchmetrics.AUROC(task="binary")
+            print(auroc(prediction, labels))
             # Count of predictions that matched the target label
             correct_prediction += (prediction == labels).sum().item()
             total_prediction += prediction.shape[0]
+
 
     acc = correct_prediction/total_prediction
     print(f'Accuracy: {acc:.2f}, Total items: {total_prediction}')
 
 
 
-def roc_auc(model,test_dl):
-    with torch.no_grad():
-        for data in test_dl:
-            inputs, labels = data[0],data[1]
-            outputs = model(inputs)
-            probabilities = F.softmax(outputs, dim=1)[:, 1]
-            y_score = probabilities.detach().numpy()
-
-            auc_score = roc_auc_score(labels, y_score)
-            print(auc_score)
-            nn_fpr, nn_tpr, nn_thresholds = roc_curve(labels, y_score)
-
-            plt.plot(nn_fpr,nn_tpr,marker='.')
-            plt.ylabel('True Positive Rate')
-            plt.xlabel('False Positive Rate' )
-            plt.show()
+# def roc_auc(model,test_dl):
+#     with torch.no_grad():
+#         for data in test_dl:
+#             inputs, labels = data[0],data[1]
+#             outputs = model(inputs)
+            
 
