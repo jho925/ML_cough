@@ -45,7 +45,8 @@ class CoughClassifier(nn.Module):
 
         # Linear Classifier
         self.ap = nn.AdaptiveAvgPool2d(output_size=1)
-        self.lin = nn.Linear(in_features=64, out_features=2)
+        self.lin = nn.Linear(in_features=64, out_features=1)
+
 
         # Wrap the Convolutional Blocks
         self.conv = nn.Sequential(*conv_layers)
@@ -60,6 +61,8 @@ class CoughClassifier(nn.Module):
 
         # Linear layer
         x = self.lin(x)
+        x = torch.sigmoid(x)
+        x = x.flatten()
 
         # Final output
         return x
@@ -67,7 +70,7 @@ class CoughClassifier(nn.Module):
 
 def training(model, train_dl, num_epochs):
     # Loss Function, Optimizer and Scheduler
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(),lr=0.001)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=0.001,
                                                 steps_per_epoch=int(len(train_dl)),
@@ -94,7 +97,7 @@ def training(model, train_dl, num_epochs):
 
             # forward + backward + optimize
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, labels.float())
             loss.backward()
             optimizer.step()
             scheduler.step()
@@ -102,7 +105,9 @@ def training(model, train_dl, num_epochs):
             # Keep stats for Loss and Accuracy
             running_loss += loss.item()
             # Get the predicted class with the highest score
-            _, prediction = torch.max(outputs,1)
+            threshold = torch.tensor([0.5])
+            prediction = (outputs>threshold).float()*1
+
 
             # Count of predictions that matched the target label
             correct_prediction += (prediction == labels).sum().item()
@@ -130,7 +135,9 @@ def test(model, test_dl):
             outputs = model(inputs)
 
             # Get the predicted class with the highest score
-            _, prediction = torch.max(outputs,1)
+            threshold = torch.tensor([0.5])
+            prediction = (output>threshold).float()*1
+
 
             # Count of predictions that matched the target label
             correct_prediction += (prediction == labels).sum().item()

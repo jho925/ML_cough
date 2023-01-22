@@ -5,7 +5,7 @@ def main():
 	Model = CoughClassifier()
 	training(Model, train_dl, 3)
 	test(Model, test_dl)
-	roc_auc(Model,test_dl)
+	# roc_auc(Model,test_dl)
 
 if __name__ == '__main__':
 	main()
