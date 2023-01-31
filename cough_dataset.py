@@ -1,11 +1,14 @@
 from torch.utils.data import DataLoader, Dataset, random_split
-from preprocessing import pad_trunc, spectro_gram, open_audio, resample, rechannel
+from preprocessing import pad_trunc, spectro_gram, open_audio, resample, rechannel, time_shift, spectro_augment
+import librosa
+import librosa.display
+import matplotlib.pyplot as plt
 
 
 class cough_dataloader(Dataset):
   def __init__(self, df):
     self.df = df
-    self.duration = 4000
+    self.duration = 7616
     self.channel = 2
     self.sr = 44100
   
@@ -22,6 +25,8 @@ class cough_dataloader(Dataset):
     reaud = resample(aud, self.sr)
     rechan = rechannel(reaud, self.channel)
     aud_dur = pad_trunc(rechan, self.duration)
-    aud_sgram = spectro_gram(aud_dur, n_mels=64, n_fft=1024, hop_len=None)
+    aud_shift = time_shift(aud_dir, self.shift_pct)
+    aud_sgram = spectro_gram(aud_shift, n_mels=64, n_fft=1024, hop_len=None)
+    aug_sgram = spectro_augment(aud_sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2)
 
-    return aud_sgram, is_cough
+    return aug_sgram, is_cough
