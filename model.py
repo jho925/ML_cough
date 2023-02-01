@@ -5,6 +5,9 @@ import torch.nn.functional as F
 from sklearn.metrics import roc_curve, roc_auc_score
 import matplotlib.pyplot as plt
 import torchmetrics
+from torch.utils.data import random_split, DataLoader
+from cough_dataset import cough_dataloader
+import pandas as pd
 
 
 class CoughClassifier(nn.Module):
@@ -67,8 +70,25 @@ class CoughClassifier(nn.Module):
         # Final output
         return x
 
+def get_dataloader(path,seed):
+    df = pd.read_csv(path)
+    myds = cough_dataloader(df)
 
-def training(model, train_dl, num_epochs):
+    # Random split of 80:20 between training and validation
+    num_items = len(myds)
+    num_train = round(num_items * 0.8)
+    num_test = num_items - num_train
+    train_ds, test_ds = random_split(myds, [num_train, num_test],generator=torch.Generator().manual_seed(seed))
+
+    # Create training and validation data loaders
+    train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
+    test_dl = DataLoader(test_ds, batch_size=2000, shuffle=False)
+
+    return train_dl,test_dl
+
+
+
+def training(model, train_dl,test_dl, num_epochs):
     # Loss Function, Optimizer and Scheduler
     criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(),lr=0.001)
@@ -76,7 +96,32 @@ def training(model, train_dl, num_epochs):
                                                 steps_per_epoch=int(len(train_dl)),
                                                 epochs=num_epochs,
                                                 anneal_strategy='linear')
+    # correct_prediction = 0
+    # total_prediction = 0
+    # with torch.no_grad():
+    #     for data in test_dl:
+    #         inputs, labels = data[0],data[1]
 
+    #         # Get predictions
+    #         outputs =  torch.sigmoid(model(inputs))
+    #         print(outputs)
+    #         print(labels)
+
+
+    #         # Threshold with sigmoid
+    #         threshold = torch.tensor([0.5])
+    #         prediction = (outputs>threshold).float()*1
+    #         auroc = torchmetrics.AUROC(task="binary")
+    #         print(roc_auc_score(labels, prediction))
+    #         print(auroc(prediction, labels))
+    #         # Count of predictions that matched the target label
+    #         correct_prediction += (prediction == labels).sum().item()
+    #         total_prediction += prediction.shape[0]
+
+
+    #     acc = correct_prediction/total_prediction
+    #     print(f'Accuracy: {acc:.2f}, Total items: {total_prediction}')
+    
     # Repeat for each epoch
     for epoch in range(num_epochs):
         running_loss = 0.0
@@ -88,15 +133,13 @@ def training(model, train_dl, num_epochs):
             # Get the input features and target labels, and put them on the GPU
             inputs, labels = data[0], data[1]
 
-            # Normalize the inputs
-            inputs_m, inputs_s = inputs.mean(), inputs.std()
-            inputs = (inputs - inputs_m) / inputs_s
 
             # Zero the parameter gradients
             optimizer.zero_grad()
 
             # forward + backward + optimize
             outputs = model(inputs)
+            # print(outputs)
             loss = criterion(outputs, labels.float())
             loss.backward()
             optimizer.step()
@@ -118,6 +161,32 @@ def training(model, train_dl, num_epochs):
         acc = correct_prediction/total_prediction
         print(f'Epoch: {epoch}, Loss: {avg_loss:.2f}, Accuracy: {acc:.2f}')
 
+        # correct_prediction = 0
+        # total_prediction = 0
+        # with torch.no_grad():
+        #     for data in test_dl:
+        #         inputs, labels = data[0],data[1]
+        #         # Normalize the inputs
+        #         # inputs_m, inputs_s = inputs.mean(), inputs.std()
+        #         # inputs = (inputs - inputs_m) / inputs_s
+
+        #         # Get predictions
+        #         outputs =  torch.sigmoid(model(inputs))
+
+
+        #         # Threshold with sigmoid
+        #         threshold = torch.tensor([0.5])
+        #         prediction = (outputs>threshold).float()*1
+        #         auroc = torchmetrics.AUROC(task="binary")
+        #         print(auroc(prediction, labels))
+        #         # Count of predictions that matched the target label
+        #         correct_prediction += (prediction == labels).sum().item()
+        #         total_prediction += prediction.shape[0]
+
+
+        #     acc = correct_prediction/total_prediction
+        #     print(f'Accuracy: {acc:.2f}, Total items: {total_prediction}')
+
     print('Finished Training')
 
 def test(model, test_dl):
@@ -132,7 +201,8 @@ def test(model, test_dl):
             inputs = (inputs - inputs_m) / inputs_s
 
             # Get predictions
-            outputs = model(inputs)
+            outputs =  torch.sigmoid(model(inputs))
+
 
             # Threshold with sigmoid
             threshold = torch.tensor([0.5])
@@ -148,11 +218,10 @@ def test(model, test_dl):
     print(f'Accuracy: {acc:.2f}, Total items: {total_prediction}')
 
 
-
-# def roc_auc(model,test_dl):
-#     with torch.no_grad():
-#         for data in test_dl:
-#             inputs, labels = data[0],data[1]
-#             outputs = model(inputs)
             
+def accuracy(prediction,labels,threshold):
+    prediction = (outputs>torch.tensor([threshold])).float()*1
+    correct_prediction += (prediction == labels).sum().item()
+    total_prediction += prediction.shape[0]
+    return correct_prediction/total_prediction
 

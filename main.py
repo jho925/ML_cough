@@ -1,9 +1,11 @@
-from model import CoughClassifier, training, test, roc_auc
-from train_test_val_split import test_dl, train_dl
+from model import CoughClassifier, training, test, get_dataloader
+import torch
 
 def main():
 	Model = CoughClassifier()
-	training(Model, train_dl, 3)
+	train_dl, test_dl = get_dataloader('flusense_labels.csv',0)
+	training(Model, train_dl,test_dl, 10)
+	torch.save(Model.state_dict(), 'model.pth')
 	test(Model, test_dl)
 	# roc_auc(Model,test_dl)
 
