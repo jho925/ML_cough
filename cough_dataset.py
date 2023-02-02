@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 class cough_dataloader(Dataset):
   def __init__(self, df):
     self.df = df
-    self.duration = 10000
-    self.channel = 2
+    self.duration = 5000
+    self.channel = 1
     self.sr = 44100
     self.shift_pct = 0.4
   
