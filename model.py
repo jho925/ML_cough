@@ -82,7 +82,7 @@ def get_dataloader(path,seed):
 
     # Create training and validation data loaders
     train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
-    test_dl = DataLoader(test_ds, batch_size=2000, shuffle=False)
+    test_dl = DataLoader(test_ds, batch_size=5000, shuffle=False)
 
     return train_dl,test_dl
 

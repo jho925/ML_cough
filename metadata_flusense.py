@@ -17,11 +17,13 @@ def main():
 
 	df3 = pd.DataFrame()
 
-	df3['path'] = 'flusense_data/' + df.loc[df['label'] == 'cough']['filename']
+	df3['path'] = 'flusense_data/' + df.loc[df['label'] != 'cough']['filename']
 
 	df3['is_cough'] = 0
 
 	df = pd.concat([df2, df3], axis=0)
+
+	df.drop_duplicates(inplace=True)
 
 	df.to_csv('flusense_labels.csv',index=False)
 

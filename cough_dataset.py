@@ -9,9 +9,9 @@ class cough_dataloader(Dataset):
   def __init__(self, df):
     self.df = df
     self.duration = 5000
-    self.channel = 1
+    self.channel = 2
     self.sr = 44100
-    self.shift_pct = 0.4
+    self.shift_pct = 0
   
   def __len__(self):
     return len(self.df)    

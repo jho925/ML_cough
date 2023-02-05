@@ -13,4 +13,4 @@ train_ds, test_ds = random_split(myds, [num_train, num_test])
 
 # Create training and validation data loaders
 train_dl = DataLoader(train_ds, batch_size=16, shuffle=True)
-test_dl = DataLoader(test_ds, batch_size=16, shuffle=False)
+test_dl = DataLoader(test_ds, batch_size=2000, shuffle=False)
