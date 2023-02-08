@@ -89,3 +89,13 @@ def spectro_augment(spec, max_mask_pct=0.1, n_freq_masks=1, n_time_masks=1):
       aug_spec = transforms.TimeMasking(time_mask_param)(aug_spec, mask_value)
 
     return aug_spec
+
+
+def spec_to_image(spec, eps=1e-6):
+  mean = spec.mean()
+  std = spec.std()
+  spec_norm = (spec - mean) / (std + eps)
+  spec_min, spec_max = spec_norm.min(), spec_norm.max()
+  spec_scaled = 255 * (spec_norm - spec_min) / (spec_max - spec_min)
+  spec_scaled = spec_scaled.astype(np.uint8)
+  return spec_scaled

@@ -140,7 +140,7 @@ def training(model, train_dl,test_dl, num_epochs):
             # forward + backward + optimize
             outputs = model(inputs)
             # print(outputs)
-            loss = criterion(outputs, labels.float())
+            loss = criterion(outputs, labels.float().unsqueeze(1))
             loss.backward()
             optimizer.step()
             scheduler.step()
